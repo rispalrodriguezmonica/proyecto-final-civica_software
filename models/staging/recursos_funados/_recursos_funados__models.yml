@@ -1,0 +1,52 @@
+# =============================================================================
+# Modelos de staging de recursos_funados
+# =============================================================================
+# Staging es 1:1 con Bronze y todavía contiene duplicados y valores sucios,
+# así que aquí solo se testea lo que el modelo garantiza: que la clave no llega
+# nula. La unicidad se testea en Silver, que es donde se limpia y deduplica.
+# =============================================================================
+
+models:
+  - name: stg_recursos_funados__tipos_ausencia
+    description: Tipos de ausencia, con requiere_aprobacion y retribuida como boolean.
+    columns:
+      - name: tipo_ausencia_codigo
+        data_tests: [not_null]
+
+  - name: stg_recursos_funados__departamentos
+    description: Departamentos renombrados y casteados.
+    columns:
+      - name: departamento_id
+        data_tests: [not_null]
+
+  - name: stg_recursos_funados__sedes
+    description: Sedes renombradas y casteadas. El país llega sin normalizar.
+    columns:
+      - name: sede_id
+        data_tests: [not_null]
+
+  - name: stg_recursos_funados__festivos
+    description: Festivos por país. Puede contener festivos repetidos.
+    columns:
+      - name: pais_iso
+        data_tests: [not_null]
+      - name: fecha
+        data_tests: [not_null]
+
+  - name: stg_recursos_funados__movimientos
+    description: Cambios de departamento de cada empleado, base de la SCD tipo 2.
+    columns:
+      - name: movimiento_id
+        data_tests: [not_null]
+
+  - name: stg_recursos_funados__empleados
+    description: Empleados con su estado actual. Nombres, emails y sexo sin limpiar.
+    columns:
+      - name: empleado_id
+        data_tests: [not_null]
+
+  - name: stg_recursos_funados__solicitudes
+    description: Solicitudes de días libres. Fechas, estado, tipo y días sin limpiar.
+    columns:
+      - name: solicitud_id
+        data_tests: [not_null]
