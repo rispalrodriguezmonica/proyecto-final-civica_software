@@ -1,0 +1,20 @@
+sources:
+  - name: recursos_funados
+    description: Export del software de RR. HH. RecursosFunados de Jíbica Software.
+    database: "{{ env_var('DBT_BRONZE_DB') }}"
+    schema: recursos_funados
+    tables:
+      - name: sedes
+        identifier: RF_SEDES
+      - name: departamentos
+        identifier: RF_DEPARTAMENTOS
+      - name: empleados
+        identifier: RF_EMPLEADOS
+      - name: movimientos
+        identifier: RF_MOVIMIENTOS
+      - name: tipos_ausencia
+        identifier: RF_TIPOS_AUSENCIA
+      - name: solicitudes
+        identifier: RF_SOLICITUDES
+      - name: festivos
+        identifier: RF_FESTIVOS
