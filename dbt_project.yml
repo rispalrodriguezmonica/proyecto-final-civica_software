@@ -42,3 +42,8 @@ models:
       +database: "{{ env_var('DBT_SILVER_DB') }}"
       recursos_funados:
         +schema: recursos_funados
+    silver:
+      +materialized: table
+      +database: "{{ env_var('DBT_SILVER_DB') }}"
+      recursos_funados:
+        +schema: recursos_funados
