@@ -47,3 +47,13 @@ models:
       +database: "{{ env_var('DBT_SILVER_DB') }}"
       recursos_funados:
         +schema: recursos_funados
+
+seeds:
+  jibica_ausencias:
+    +database: "{{ env_var('DBT_SILVER_DB') }}"
+    +schema: seeds
+    eventos:
+      +column_types:
+        evento_id: number
+        fecha_evento: date
+        pais_iso_ambito: varchar(2)
