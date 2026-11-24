@@ -52,3 +52,30 @@ models:
           - accepted_values:
               arguments:
                 values: ['VAC', 'AP', 'ENF']
+
+  - name: fct_ausencia_dia
+    description: "Días de ausencia. Grano: una fila = un día laborable de una solicitud."
+    tests:
+      - unique:
+          column_name: "solicitud_id || '-' || fecha"
+    columns:
+      - name: solicitud_id
+        tests:
+          - not_null
+      - name: fecha
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_fecha')
+                field: fecha
+      - name: empleado_id
+        tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_empleado')
+                field: empleado_id
+      - name: cuenta_para_indice
+        tests:
+          - not_null
