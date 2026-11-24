@@ -1,0 +1,54 @@
+version: 2
+
+models:
+  - name: dim_fecha
+    description: "Calendario. Grano: una fila = un día (2024-01-01 a 2026-12-31)."
+    columns:
+      - name: fecha
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_evento
+    description: "Eventos (lanzamientos, deportes...). Grano: una fila = un evento."
+    columns:
+      - name: evento_id
+        tests:
+          - unique
+          - not_null
+      - name: fecha_evento
+        tests:
+          - not_null
+      - name: fecha_comparacion
+        tests:
+          - not_null
+
+  - name: dim_empleado
+    description: "Empleados con su situación actual. Grano: una fila = un empleado."
+    columns:
+      - name: empleado_id
+        tests:
+          - unique
+          - not_null
+      - name: pais
+        tests:
+          - not_null
+      - name: departamento
+        tests:
+          - not_null
+      - name: generacion
+        tests:
+          - accepted_values:
+              arguments:
+                values: ['Baby boomers', 'Gen X', 'Millennials', 'Gen Z', 'Desconocida']
+
+  - name: dim_tipo_ausencia
+    description: "Tipos de ausencia. Grano: una fila = un tipo."
+    columns:
+      - name: tipo_ausencia_codigo
+        tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['VAC', 'AP', 'ENF']

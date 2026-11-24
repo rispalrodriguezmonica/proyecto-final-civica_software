@@ -47,6 +47,10 @@ models:
       +database: "{{ env_var('DBT_SILVER_DB') }}"
       recursos_funados:
         +schema: recursos_funados
+    gold:
+      +materialized: table
+      +database: "{{ env_var('DBT_GOLD_DB') }}"
+      +schema: core
 
 seeds:
   jibica_ausencias:
