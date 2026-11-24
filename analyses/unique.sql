@@ -1,7 +1,6 @@
 -- =============================================================================
--- Perfilado · unique · Duplicados
+-- Perfilado: unique (aka duplicados)
 -- =============================================================================
--- Pregunta: ¿hay filas repetidas?
 --   - Por clave técnica: el mismo id dos veces.
 --   - Por clave de negocio: ids distintos, pero la misma cosa.
 -- Resultado: filas que sobran (0 = sin duplicados).
