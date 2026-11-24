@@ -1,12 +1,32 @@
+{{
+    config(
+        materialized='incremental',
+        unique_key='solicitud_id',
+        incremental_strategy='merge',
+        on_schema_change='fail'
+    )
+}}
+
 -- =============================================================================
 -- slv_recursos_funados__solicitudes
 -- =============================================================================
 -- Capa Silver: limpiar, deduplicar y normalizar.
+-- Grano: una fila = una solicitud de días libres única (sin reenvíos).
+--
+-- Incremental (merge por solicitud_id):
+--   - Primera ejecución o --full-refresh: procesa todas las solicitudes.
+--   - Siguientes: solo las cargadas en Bronze después de la última procesada
+--     (cargado_en > máximo de esta tabla).
+--   - Límite conocido: la deduplicación (paso 7) solo compara las filas del
+--     lote nuevo entre sí; un reenvío que llegue en un lote posterior al
+--     original no se detectaría sin --full-refresh.
+--
 -- Limpiezas (en este orden):
 --   1. empleado_id: se quita el prefijo 'E' (E1234 -> 1234).
 --   2. Huérfanas: se excluyen las solicitudes de empleados que no existen.
---   3. Fechas: el formato depende de la sede del empleado. Con guiones = ISO;
---      sedes de EE. UU. y Canadá = mm/dd/aaaa; el resto = dd/mm/aaaa.
+--   3. Fechas: el formato depende de la sede del empleado (macro
+--      fecha_segun_sede). Con guiones = ISO; sedes de EE. UU. y Canadá =
+--      mm/dd/aaaa; el resto = dd/mm/aaaa.
 --   4. Si la fecha de fin es anterior a la de inicio, vienen cambiadas: se
 --      intercambian.
 --   5. estado y tipo_ausencia: variantes -> valores normalizados.
@@ -19,6 +39,9 @@
 
 with solicitudes as (
     select * from {{ ref('stg_recursos_funados__solicitudes') }}
+    {% if is_incremental() %}
+    where cargado_en > (select max(cargado_en) from {{ this }})
+    {% endif %}
 ),
 
 empleados as (
@@ -56,17 +79,8 @@ limpias as (
 
         , creada_en
 
-        , case
-              when fecha_inicio like '%-%'      then to_date(fecha_inicio, 'YYYY-MM-DD')
-              when pais_iso in ('US', 'CA')     then to_date(fecha_inicio, 'MM/DD/YYYY')
-              else                                   to_date(fecha_inicio, 'DD/MM/YYYY')
-          end                                           as fecha_inicio_leida
-
-        , case
-              when fecha_fin like '%-%'         then to_date(fecha_fin, 'YYYY-MM-DD')
-              when pais_iso in ('US', 'CA')     then to_date(fecha_fin, 'MM/DD/YYYY')
-              else                                   to_date(fecha_fin, 'DD/MM/YYYY')
-          end                                           as fecha_fin_leida
+        , {{ fecha_segun_sede('fecha_inicio', 'pais_iso') }}  as fecha_inicio_leida
+        , {{ fecha_segun_sede('fecha_fin', 'pais_iso') }}     as fecha_fin_leida
 
         , try_to_number(regexp_substr(dias_laborables, '[0-9]+'))
                                                         as dias_laborables
@@ -82,6 +96,7 @@ limpias as (
 
         , motivo
         , aprobador_id
+        , cargado_en
     from con_pais
 ),
 
@@ -106,6 +121,7 @@ select
     , estado
     , motivo
     , aprobador_id
+    , cargado_en
 from ordenadas
 qualify row_number() over (
     partition by empleado_id, fecha_inicio, fecha_fin, tipo_ausencia_codigo
