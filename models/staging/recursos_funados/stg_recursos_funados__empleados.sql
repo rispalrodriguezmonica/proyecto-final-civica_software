@@ -20,7 +20,12 @@ renamed as (
         , sexo
         , fecha_nacimiento::date        as fecha_nacimiento
         , sede_id::number               as sede_id
+        , nombre_sede
+        , ciudad
+        , pais
+        , zona_horaria
         , departamento_id::number       as departamento_id
+        , departamento                  as nombre_departamento
         , puesto
         , manager_id::number            as manager_id
         , fecha_alta::date              as fecha_alta

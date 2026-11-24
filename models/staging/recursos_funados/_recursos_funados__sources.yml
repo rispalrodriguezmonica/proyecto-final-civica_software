@@ -4,10 +4,6 @@ sources:
     database: "{{ env_var('DBT_BRONZE_DB') }}"
     schema: recursos_funados
     tables:
-      - name: sedes
-        identifier: RF_SEDES
-      - name: departamentos
-        identifier: RF_DEPARTAMENTOS
       - name: empleados
         identifier: RF_EMPLEADOS
       - name: movimientos
