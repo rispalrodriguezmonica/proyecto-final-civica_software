@@ -24,8 +24,12 @@
 --   1. Explotar cada solicitud en días (del inicio al fin), sin fines de semana.
 --   2. Quitar los festivos del país de la sede del empleado.
 --   3. Recalcular los días laborables de cada solicitud contando sus filas.
---   4. cuenta_para_indice: tipo discrecional (VAC, AP), de 1 a 5 días
---      laborables y APROBADA o PENDIENTE.
+--   4. Dos indicadores (ausencia corta, de 1 a 5 días, APROBADA o PENDIENTE):
+--      - cuenta_dias_pedidos: solo tipos discrecionales (VAC, AP). Días que
+--        el empleado eligió y reservó.
+--      - cuenta_ausencia_real: además, bajas por enfermedad (ENF). Todo el
+--        que faltó; las bajas se comunican tarde y llegan en cargas
+--        posteriores.
 -- =============================================================================
 
 with solicitudes as (
@@ -52,7 +56,7 @@ festivos as (
     select pais_iso, fecha from {{ ref('slv_recursos_funados__festivos') }}
 ),
 
--- una fila por cada dia entre inicio y fin (ya sin fines de semana)
+-- Paso 1: una fila por cada día entre inicio y fin (ya sin fines de semana)
 explotadas as (
     select
           s.solicitud_id
@@ -69,7 +73,7 @@ explotadas as (
         on c.fecha between s.fecha_inicio and s.fecha_fin
 ),
 
--- quitar los festivos del pais del empleado
+-- Paso 2: quitar los festivos del país del empleado
 sin_festivos as (
     select ex.*
     from explotadas ex
@@ -79,7 +83,7 @@ sin_festivos as (
     where f.fecha is null
 ),
 
--- dias laborables de cada solicitud
+-- Paso 3: días laborables reales de cada solicitud
 con_dias as (
     select
           sf.*
@@ -88,9 +92,19 @@ con_dias as (
     from sin_festivos sf
     left join tipos t
         on sf.tipo_ausencia_codigo = t.tipo_ausencia_codigo
+),
+
+-- Paso 4: la base común de los dos indicadores
+cortas_validas as (
+    select
+          *
+        , (
+              dias_solicitud between 1 and 5
+              and estado in ('APROBADA', 'PENDIENTE')
+          )                                             as es_corta_valida
+    from con_dias
 )
 
--- dias que cuentan para el índice
 select
       solicitud_id
     , fecha
@@ -99,10 +113,7 @@ select
     , tipo_ausencia_codigo
     , estado
     , dias_solicitud
-    , (
-          es_discrecional
-          and dias_solicitud between 1 and 5
-          and estado in ('APROBADA', 'PENDIENTE')
-      )                                                 as cuenta_para_indice
+    , es_corta_valida and es_discrecional               as cuenta_dias_pedidos
+    , es_corta_valida                                   as cuenta_ausencia_real
     , cargado_en
-from con_dias
+from cortas_validas

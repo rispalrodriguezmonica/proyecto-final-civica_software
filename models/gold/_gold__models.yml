@@ -76,6 +76,9 @@ models:
               arguments:
                 to: ref('dim_empleado')
                 field: empleado_id
-      - name: cuenta_para_indice
+      - name: cuenta_dias_pedidos
+        tests:
+          - not_null
+      - name: cuenta_ausencia_real
         tests:
           - not_null
