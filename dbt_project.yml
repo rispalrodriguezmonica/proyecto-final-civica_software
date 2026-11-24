@@ -51,6 +51,8 @@ models:
       +materialized: table
       +database: "{{ env_var('DBT_GOLD_DB') }}"
       +schema: core
+      +grants:
+        select: ['REPORTING_ROLE']
 
 seeds:
   jibica_ausencias:
