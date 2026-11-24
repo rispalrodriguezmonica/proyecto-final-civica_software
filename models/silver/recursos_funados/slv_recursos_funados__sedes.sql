@@ -2,26 +2,36 @@
 -- slv_recursos_funados__sedes
 -- =============================================================================
 -- Capa Silver: limpiar, deduplicar y normalizar.
--- Limpieza: el país llega con criterios mezclados (España, Italy, IE, USA...).
--- Se traduce a código ISO con el seed paises, el mismo formato que usan los
--- festivos, para que sedes y festivos se puedan cruzar.
+-- Normalización: RecursosFunados exporta la sede repetida en cada empleado
+-- (6.871 filas). Aquí se extrae una fila por sede (11).
+-- Limpieza: el país llega con criterios mezclados; se traduce a ISO con el
+-- seed paises.
 -- =============================================================================
 
-with sedes as (
-    select * from {{ ref('stg_recursos_funados__sedes') }}
+with empleados as (
+    select * from {{ ref('stg_recursos_funados__empleados') }}
 ),
 
 paises as (
     select * from {{ ref('paises') }}
+),
+
+sedes as (
+    select distinct
+          sede_id
+        , nombre_sede
+        , ciudad
+        , pais
+        , zona_horaria
+    from empleados
 )
 
 select
       s.sede_id
-    , s.nombre
+    , s.nombre_sede             as nombre
     , s.ciudad
     , p.pais_iso
     , s.zona_horaria
-    , s.fecha_apertura
 from sedes s
 left join paises p
     on s.pais = p.pais_origen

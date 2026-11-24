@@ -1,0 +1,99 @@
+# =============================================================================
+# Modelos de Silver de recursos_funados
+# =============================================================================
+# Silver garantiza datos limpios, sin duplicados y normalizados. Cada test
+# comprueba una de las limpiezas: si alguna fallara, el test lo detectaría.
+# =============================================================================
+
+models:
+  - name: slv_recursos_funados__sedes
+    description: Una fila por sede, extraída de empleados. País normalizado a ISO.
+    columns:
+      - name: sede_id
+        data_tests: [unique, not_null]
+      - name: pais_iso
+        data_tests: [not_null]
+
+  - name: slv_recursos_funados__departamentos
+    description: Una fila por departamento, extraída de empleados. Sin 'Mkt'.
+    columns:
+      - name: departamento_id
+        data_tests: [unique, not_null]
+
+  - name: slv_recursos_funados__festivos
+    description: Festivos por país, sin repetidos.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "pais_iso || '-' || fecha"
+
+  - name: slv_recursos_funados__tipos_ausencia
+    description: Tipos de ausencia con es_discrecional.
+    columns:
+      - name: tipo_ausencia_codigo
+        data_tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['VAC', 'AP', 'ENF']
+
+  - name: slv_recursos_funados__empleados
+    description: Empleados limpios. Solo ids de sede y departamento (3FN).
+    columns:
+      - name: empleado_id
+        data_tests: [unique, not_null]
+      - name: sexo
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['H', 'M', 'X']
+      - name: sede_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_recursos_funados__sedes')
+                field: sede_id
+      - name: departamento_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_recursos_funados__departamentos')
+                field: departamento_id
+
+  - name: slv_recursos_funados__movimientos
+    description: Cambios de departamento, con 'Mkt' unificado en Marketing.
+    columns:
+      - name: movimiento_id
+        data_tests: [unique, not_null]
+
+  - name: slv_recursos_funados__solicitudes
+    description: Solicitudes limpias, sin huérfanas ni duplicadas.
+    data_tests:
+      - unique:
+          arguments:
+            column_name: "empleado_id || '-' || fecha_inicio || '-' || fecha_fin || '-' || coalesce(tipo_ausencia_codigo, '')"
+    columns:
+      - name: solicitud_id
+        data_tests: [unique, not_null]
+      - name: empleado_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('slv_recursos_funados__empleados')
+                field: empleado_id
+      - name: fecha_inicio
+        data_tests: [not_null]
+      - name: fecha_fin
+        data_tests: [not_null]
+      - name: estado
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['APROBADA', 'RECHAZADA', 'CANCELADA', 'PENDIENTE']
+      - name: tipo_ausencia_codigo
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['VAC', 'AP', 'ENF']

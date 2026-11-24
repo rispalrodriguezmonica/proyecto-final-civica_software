@@ -13,18 +13,6 @@ models:
       - name: tipo_ausencia_codigo
         data_tests: [not_null]
 
-  - name: stg_recursos_funados__departamentos
-    description: Departamentos renombrados y casteados.
-    columns:
-      - name: departamento_id
-        data_tests: [not_null]
-
-  - name: stg_recursos_funados__sedes
-    description: Sedes renombradas y casteadas. El país llega sin normalizar.
-    columns:
-      - name: sede_id
-        data_tests: [not_null]
-
   - name: stg_recursos_funados__festivos
     description: Festivos por país. Puede contener festivos repetidos.
     columns:
