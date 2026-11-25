@@ -82,3 +82,49 @@ models:
       - name: cuenta_ausencia_real
         tests:
           - not_null
+
+  - name: agg_indice_evento
+    description: >
+      Índices de ausencia por evento. Grano: una fila = un evento x un corte
+      (Total, País, Generación, Departamento) x un valor. Lo lee Power BI:
+      tiene contrato para que un cambio de columnas falle antes de romper el
+      informe.
+    config:
+      contract:
+        enforced: true
+    tests:
+      - unique:
+          column_name: "evento_id || '-' || corte || '-' || valor"
+    columns:
+      - name: evento_id
+        data_type: number(38,0)
+        constraints:
+          - type: not_null
+      - name: evento
+        data_type: varchar
+      - name: tipo_evento
+        data_type: varchar
+      - name: fecha_evento
+        data_type: date
+      - name: corte
+        data_type: varchar
+        constraints:
+          - type: not_null
+      - name: valor
+        data_type: varchar
+      - name: plantilla_evento
+        data_type: number(13,0)
+      - name: plantilla_comparacion
+        data_type: number(13,0)
+      - name: pedidos_evento
+        data_type: number(13,0)
+      - name: pedidos_comparacion
+        data_type: number(13,0)
+      - name: reales_evento
+        data_type: number(13,0)
+      - name: reales_comparacion
+        data_type: number(13,0)
+      - name: indice_dias_pedidos
+        data_type: number(20,2)
+      - name: indice_ausencia_real
+        data_type: number(20,2)
