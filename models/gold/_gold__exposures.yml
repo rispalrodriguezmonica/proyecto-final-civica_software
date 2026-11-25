@@ -1,0 +1,22 @@
+version: 2
+
+exposures:
+  - name: informe_ausencias_eventos
+    label: "Power BI · Ausencias y eventos"
+    type: dashboard
+    maturity: medium
+    description: >
+      Informe de Power BI que responde a la pregunta del proyecto: ¿los
+      lanzamientos de videojuegos aumentan las ausencias? Cuatro páginas:
+      índices por evento, mapa de calor por generación, GTA VI por país y
+      la previsión final. Lee PRO_GOLD_DB.core con REPORTING_ROLE, en modo
+      Importar.
+    depends_on:
+      - ref('agg_indice_evento')
+      - ref('dim_evento')
+      - ref('fct_ausencia_dia')
+      - ref('dim_empleado')
+      - ref('dim_fecha')
+      - ref('dim_tipo_ausencia')
+    owner:
+      name: Mónica
