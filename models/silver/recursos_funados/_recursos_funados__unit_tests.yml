@@ -1,0 +1,35 @@
+version: 2
+
+unit_tests:
+  - name: test_slv_solicitudes_lee_fechas_segun_sede
+    description: >
+      La misma fecha llega escrita de cuatro formas y las cuatro deben dar el
+      3 al 4 de diciembre de 2026: dd/mm en España, mm/dd en EE. UU., ISO con
+      guiones, y con inicio y fin cambiados. Tambien quita la E del id.
+    model: slv_recursos_funados__solicitudes
+    overrides:
+      macros:
+        is_incremental: false
+    given:
+      - input: ref('stg_recursos_funados__solicitudes')
+        rows:
+          - {solicitud_id: 1, empleado_id: 'E1001', tipo_ausencia: 'vacation', creada_en: '2026-11-20 10:00:00', fecha_inicio: '03/12/2026', fecha_fin: '04/12/2026', estado: 'aprobado'}
+          - {solicitud_id: 2, empleado_id: '1002',  tipo_ausencia: 'VAC',      creada_en: '2026-11-20 10:00:00', fecha_inicio: '12/03/2026', fecha_fin: '12/04/2026', estado: 'approved'}
+          - {solicitud_id: 3, empleado_id: '1003',  tipo_ausencia: 'VAC',      creada_en: '2026-11-20 10:00:00', fecha_inicio: '2026-12-03', fecha_fin: '2026-12-04', estado: 'aprobada'}
+          - {solicitud_id: 4, empleado_id: '1004',  tipo_ausencia: 'VAC',      creada_en: '2026-11-20 10:00:00', fecha_inicio: '04/12/2026', fecha_fin: '03/12/2026', estado: 'aprobada'}
+      - input: ref('slv_recursos_funados__empleados')
+        rows:
+          - {empleado_id: 1001, sede_id: 1}
+          - {empleado_id: 1002, sede_id: 8}
+          - {empleado_id: 1003, sede_id: 1}
+          - {empleado_id: 1004, sede_id: 1}
+      - input: ref('slv_recursos_funados__sedes')
+        rows:
+          - {sede_id: 1, pais_iso: 'ES'}
+          - {sede_id: 8, pais_iso: 'US'}
+    expect:
+      rows:
+        - {solicitud_id: 1, empleado_id: 1001, fecha_inicio: '2026-12-03', fecha_fin: '2026-12-04'}
+        - {solicitud_id: 2, empleado_id: 1002, fecha_inicio: '2026-12-03', fecha_fin: '2026-12-04'}
+        - {solicitud_id: 3, empleado_id: 1003, fecha_inicio: '2026-12-03', fecha_fin: '2026-12-04'}
+        - {solicitud_id: 4, empleado_id: 1004, fecha_inicio: '2026-12-03', fecha_fin: '2026-12-04'}
